@@ -1,8 +1,8 @@
 CC = gcc
-CFLAGS = -std=gnu99
+CFLAGS = -std=gnu99 -lconfig -lespeak -lcurl -I/usr/include/libxml2 -lxml2
 
-configtest:
-	$(CC) $(CFLAGS) -lconfig -lespeak -o configtest configtest.c
+all : weather configtest
+.PHONY : all
 
 clean:
-	rm -f configtest
+	rm -f weather configtest

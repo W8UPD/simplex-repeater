@@ -48,7 +48,7 @@ gweather_t parseit() {
   return weather;
 }
 
-fetch_weather(char *location) {
+void fetch_weather(char *location) {
   FILE *tmp = fopen("/tmp/gweather.xml", "w");
   if (!tmp) {
     printf("Could not open /tmp/gweather.json for some odd reason.\n");
