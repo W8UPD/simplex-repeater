@@ -21,8 +21,9 @@ int main(int argc, char **argv)
 
   setting = config_lookup(&cfg, "repeater");
   if (setting != NULL) {
-    const char *identifier, *initial_identifier, *pl_tone;
+    const char *identifier, *initial_identifier;
     int voice_synthesis;
+    double pl_tone;
 
     if (config_setting_lookup_bool(setting, "voice_synthesis", &voice_synthesis))
       if (voice_synthesis)
@@ -36,8 +37,8 @@ int main(int argc, char **argv)
     if (config_setting_lookup_string(setting, "initial_identifier", &initial_identifier))
       printf("Initial Identifier: %s\n", initial_identifier);
 
-    if (config_setting_lookup_string(setting, "pl_tone", &pl_tone))
-      printf("PL Tone: %s\n", pl_tone);
+    if (config_setting_lookup_float(setting, "pl_tone", &pl_tone))
+      printf("PL Tone: %.2f\n", pl_tone);
     
   }
 }
