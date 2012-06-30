@@ -3,6 +3,7 @@
 *.#
 *.swp
 *.sample
+repeater.cfg
 a.out
 repeater
 configtest
