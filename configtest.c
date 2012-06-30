@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <libconfig.h>
+#include "speech_synthesis.h"
 
-int main(int argc, char **argv)
+int main(int argc, char *argv)
 {
   config_t cfg;
   config_setting_t *setting;
@@ -41,4 +43,38 @@ int main(int argc, char **argv)
       printf("PL Tone: %.2f\n", pl_tone);
     
   }
+
+  // TODO: Split this into a function, using the above "stuff".
+  config_setting_t *commands;
+  //  vocalize("Welcome to the W 8 U P D simplex repeater.", "default");
+  //  vocalize("Here are all the commands I can perform.", "default");
+
+  commands = config_lookup(&cfg, "repeater.commands");
+  for (int i = 0; i < config_setting_length(commands); i++) {
+    config_setting_t *command = config_setting_get_elem(commands, i);
+    char result[1000];
+
+    if (config_setting_get_bool(config_setting_get_member(command, "enabled"))) {
+      if (config_setting_get_member(command, "argument") != NULL) {
+	// We take an argument after the prefix.
+	char *command_summary = "%s by dialing %s followed by the %s.";
+	snprintf(result, sizeof(result), command_summary,
+		 config_setting_get_string(config_setting_get_member(command, "summary")),
+		 config_setting_get_string(config_setting_get_member(command, "prefix")),
+		 config_setting_get_string(config_setting_get_member(command, "argument")));
+      } else {
+	// Just the prefix, we don't take any additional information.
+	char *command_summary = "%s by dialing %s.";
+	snprintf(result, sizeof(result), command_summary,
+		 config_setting_get_string(config_setting_get_member(command, "summary")),
+		 config_setting_get_string(config_setting_get_member(command, "prefix")));
+      }
+
+      strcat(result, "\n");
+      printf(result);
+      vocalize(result, "klatt");
+    }
+  }
+
+  return 0;
 }
