@@ -16,4 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void vocalize(char *, char *);
+#include "speech_synthesis.h"
+#include "repeater.h"
+
+int main(int argc, char **args)
+{
+  repeat();
+  return 0;
+}

@@ -16,4 +16,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void vocalize(char *, char *);
+#include <espeak/speak_lib.h>
+
+void vocalize(char *text, char *voicename)
+{
+  int synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
+  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, NULL, 0);
+  espeak_SetVoiceByName(voicename);
+  espeak_SetParameter(espeakRATE, 140, 0);
+  espeak_Synth(text, 1000, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
+  espeak_Synchronize();
+}
