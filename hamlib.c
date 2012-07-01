@@ -43,7 +43,8 @@ int initialize_rig()
   config_setting_lookup_string(rig_control_settings, "serial_port", &serial_port);
   
   printf("frequency: %s\n", frequency);
-  
+
+  rig_set_debug(RIG_DEBUG_WARN);
   my_rig = rig_init(rig_id);
 
   if (!my_rig) {
