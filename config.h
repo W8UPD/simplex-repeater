@@ -16,30 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "speech_synthesis.h"
-#include "repeater.h"
-#include "config.h"
-#include "weather.h"
-#include "hamlib.h"
+#include <libconfig.h>
 
-extern config_setting_t *repeater_settings;
-config_t cfg;
-
-int main(int argc, char **args)
-{
-  setup_config(); // Populate 'setting' variable.
-
-  // Just a test.
-  const char *identifier;
-  if (config_setting_lookup_string(repeater_settings, "identifier", &identifier))
-    printf("Identifier: %s\n", identifier);
-
-  // hamlib stuff
-  initialize_rig();
-
-  fetch_weather("44325");
-
-  // TODO: This should be its own thread.
-  repeat();
-  return 0;
-}
+void setup_config();
