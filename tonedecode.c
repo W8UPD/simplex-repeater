@@ -27,7 +27,6 @@ void doBlock(float*, float*, float*, float*, float*);
 void findMag();
 void demod(float*);
 void printInfo(float*, float*);
-char dtmf(short*);
 
 //does calculations for every sample
 void doBlock(float* block, float* samp0, float* samp1, float* samp2, float* coeff) {

@@ -21,6 +21,8 @@
 #include <portaudio.h>
 #include <pthread.h>
 #include <unistd.h>
+#include "tonedecode.h"
+#include "repeater.h"
 
 #define SAMPLE_RATE  (8000)
 #define FRAMES_PER_BUFFER (512)
@@ -31,15 +33,8 @@
 #define WRITE_TO_FILE   (0)
 
 #define PA_SAMPLE_TYPE  paInt16
-typedef short SAMPLE;
 #define SAMPLE_SILENCE  (0)
 #define PRINTF_S_FORMAT "%d"
-
-typedef struct{
-  int          frameIndex;  //Where one is in array
-  int          maxFrameIndex; //Length of array
-  SAMPLE       *recAud; //recorded audio samples
-}  paData;
 
 char rcvd;
 extern float toneAvg;
