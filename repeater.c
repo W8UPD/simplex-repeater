@@ -22,7 +22,6 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "tonedecode.h"
-#include "repeater.h"
 
 #define SAMPLE_RATE  (8000)
 #define FRAMES_PER_BUFFER (512)
@@ -47,8 +46,8 @@ static int record( const void *inBuf, void *outBuf,
 		   void *userData )
 {
   paData *data = (paData*)userData;
-  const SAMPLE *prwrite = (const SAMPLE*)inBuf;
-  SAMPLE *pwrite = &data->recAud[data->frameIndex * NUM_CHANNELS];
+  const short *prwrite = (const short*)inBuf;
+  short *pwrite = &data->recAud[data->frameIndex * NUM_CHANNELS];
   long framesToCalc;
   long i;
   int finished;
@@ -83,7 +82,7 @@ static int record( const void *inBuf, void *outBuf,
 
   data->frameIndex += framesToCalc;
 
-  printf(":%c %f-", dtmf(&data), toneAvg);
+  printf(":%c %f-", dtmf(data->recAud), toneAvg);
   fflush(stdout);
 
   return finished;
@@ -96,8 +95,8 @@ static int play( const void *inBuf, void *outBuf,
 		 void *userData )
 {
   paData *data = (paData*)userData;
-  SAMPLE *prwrite = &data->recAud[data->frameIndex * NUM_CHANNELS];
-  SAMPLE *pwrite = (SAMPLE*)outBuf;
+  short *prwrite = &data->recAud[data->frameIndex * NUM_CHANNELS];
+  short *pwrite = (short*)outBuf;
   unsigned int i;
   int finished;
   unsigned int framesLeft = data->maxFrameIndex - data->frameIndex;
@@ -144,7 +143,7 @@ int sound() {
   int totalFrames;
   int numSamples;
   int numBytes;
-  SAMPLE val;
+  short val;
   int TX = 0;
   int RX = 1;
   int thresh = 15000;
@@ -157,10 +156,10 @@ int sound() {
   data.maxFrameIndex = totalFrames = NUM_SECONDS * SAMPLE_RATE; //Record for...
   data.frameIndex = 0; //zero position
   numSamples = totalFrames * NUM_CHANNELS;
-  numBytes = numSamples * sizeof(SAMPLE);
+  numBytes = numSamples * sizeof(short);
 
   //allocate memory for recorded audio
-  data.recAud = (SAMPLE *) malloc( numBytes ); /* recAud is initialised. */
+  data.recAud = (short *) malloc( numBytes ); /* recAud is initialised. */
   if (data.recAud == NULL ) {
       printf("Could not allocate record array.\n");
       goto done;
@@ -194,7 +193,7 @@ int sound() {
   err = Pa_StartStream(stream);
   if(err != paNoError) goto done;
 
-  SAMPLE max = 0;
+  short max = 0;
 
   //while still recording...
   while((err = Pa_IsStreamActive(stream)) == 1){

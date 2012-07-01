@@ -18,12 +18,10 @@
 
 #include <portaudio.h>
 
-typedef short SAMPLE;
-
 typedef struct {
   int          frameIndex;  //Where one is in array
   int          maxFrameIndex; //Length of array
-  SAMPLE       *recAud; //recorded audio samples
+  short        *recAud; //recorded audio samples
 } paData;
 
 void repeat();
