@@ -23,7 +23,7 @@
 #include "speech_synthesis.h"
 
 config_t cfg;
-config_setting_t *setting;
+config_setting_t *repeater_settings;
 
 void setup_config()
 {
@@ -39,8 +39,8 @@ void setup_config()
     exit(EXIT_FAILURE);
   }
 
-  setting = config_lookup(&cfg, "repeater");
-  if (setting == NULL) {
+  repeater_settings = config_lookup(&cfg, "repeater");
+  if (repeater_settings == NULL) {
     fprintf(stderr, "No 'repeater' section found in config file.\n");
     exit(EXIT_FAILURE);
   }
