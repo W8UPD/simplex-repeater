@@ -16,4 +16,4 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void vocalize(char *, char *);
+void vocalize(char *);

@@ -17,12 +17,28 @@
 */
 
 #include <espeak/speak_lib.h>
+#include <libconfig.h>
 
-void vocalize(char *text, char *voicename)
+extern config_setting_t *repeater_settings;
+extern config_t cfg;
+
+void vocalize(char *text)
 {
+  config_setting_t *voice_synthesis_settings;
+  voice_synthesis_settings = config_lookup(&cfg, "repeater.voice_synthesis");
+  
+  int enabled;
+  const char *voice;
+  
+  config_setting_lookup_string(voice_synthesis_settings, "voice", &voice);
+  config_setting_lookup_bool(voice_synthesis_settings, "enabled", &enabled);
+
+  if (!enabled)
+    return;
+
   int synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
   espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, NULL, 0);
-  espeak_SetVoiceByName(voicename);
+  espeak_SetVoiceByName(voice);
   espeak_SetParameter(espeakRATE, 140, 0);
   espeak_Synth(text, 1000, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
   espeak_Synchronize();

@@ -91,5 +91,5 @@ void fetch_weather(char *location) {
   char result[1000];
   snprintf(result, sizeof(result), "Weather for %s. Currently: %s degrees fahrenheit. %s. %s. %s.",
 	   weather.city, weather.temp_f, weather.conditions, weather.wind, weather.humidity);
-  vocalize(result, "klatt");
+  vocalize(result);
 }
