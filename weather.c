@@ -11,11 +11,11 @@ CURL *curl;
 CURLcode curl_res;
 
 typedef struct {
-  char *city;
-  char *temp_f;
-  char *conditions;
-  char *humidity;
-  char *wind;
+  xmlChar *city;
+  xmlChar *temp_f;
+  xmlChar *conditions;
+  xmlChar *humidity;
+  xmlChar *wind;
 } gweather_t;
 
 gweather_t parseit() {
@@ -29,19 +29,19 @@ gweather_t parseit() {
   xmlXPathContext *context = xmlXPathNewContext(doc);
 
   xmlXPathObjectPtr city = xmlXPathEvalExpression((xmlChar*)"/xml_api_reply/weather/forecast_information/city", context);
-  weather.city = xmlGetProp(city->nodesetval->nodeTab[0], "data");
+  weather.city = xmlGetProp(city->nodesetval->nodeTab[0], (xmlChar*)"data");
 
   xmlXPathObjectPtr temp_f = xmlXPathEvalExpression((xmlChar*)"/xml_api_reply/weather/current_conditions/temp_f", context);
-  weather.temp_f = xmlGetProp(temp_f->nodesetval->nodeTab[0], "data");
+  weather.temp_f = xmlGetProp(temp_f->nodesetval->nodeTab[0], (xmlChar*)"data");
 
   xmlXPathObjectPtr conditions = xmlXPathEvalExpression((xmlChar*)"/xml_api_reply/weather/current_conditions/condition", context);
-  weather.conditions = xmlGetProp(conditions->nodesetval->nodeTab[0], "data");
+  weather.conditions = xmlGetProp(conditions->nodesetval->nodeTab[0], (xmlChar*)"data");
 
   xmlXPathObjectPtr wind = xmlXPathEvalExpression((xmlChar*)"/xml_api_reply/weather/current_conditions/wind_condition", context);
-  weather.wind = xmlGetProp(wind->nodesetval->nodeTab[0], "data");
+  weather.wind = xmlGetProp(wind->nodesetval->nodeTab[0], (xmlChar*)"data");
 
   xmlXPathObjectPtr humidity = xmlXPathEvalExpression((xmlChar*)"/xml_api_reply/weather/current_conditions/humidity", context);
-  weather.humidity = xmlGetProp(humidity->nodesetval->nodeTab[0], "data");
+  weather.humidity = xmlGetProp(humidity->nodesetval->nodeTab[0], (xmlChar*)"data");
 
   xmlFreeDoc(doc);
   xmlCleanupParser();

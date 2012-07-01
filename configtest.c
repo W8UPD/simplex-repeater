@@ -4,7 +4,7 @@
 #include <libconfig.h>
 #include "speech_synthesis.h"
 
-int main(int argc, char *argv)
+int main(int argc, char **argv)
 {
   config_t cfg;
   config_setting_t *setting;
@@ -27,11 +27,12 @@ int main(int argc, char *argv)
     int voice_synthesis;
     double pl_tone;
 
-    if (config_setting_lookup_bool(setting, "voice_synthesis", &voice_synthesis))
+    if (config_setting_lookup_bool(setting, "voice_synthesis", &voice_synthesis)) {
       if (voice_synthesis)
 	printf("Voice Synthesis: yes\n");
       else
 	printf("Voice Synthesis: no\n");
+    }
 
     if (config_setting_lookup_string(setting, "identifier", &identifier))
       printf("Identifier: %s\n", identifier);
