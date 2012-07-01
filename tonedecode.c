@@ -195,7 +195,7 @@ char dtmf(short *audio){
     sum = 0;
     toneAvg = 0;
 
-    printf("\n\n%c %d %d\n\n", keys[row][col], row, col);
+    printf("\n\n%c %d %d\n\n", keys[(int)row][(int)col], row, col);
     return keys[(int)row][(int)col];
 
   }
