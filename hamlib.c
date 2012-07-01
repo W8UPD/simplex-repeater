@@ -32,15 +32,19 @@ int initialize_rig()
   config_setting_t *rig_control_settings;
   rig_control_settings = config_lookup(&cfg, "repeater.rig_control");
 
-  int rig_id, baud_rate, data_bits, stop_bits;
+  int rig_id, baud_rate, data_bits, stop_bits, enabled;
   const char *serial_port, *frequency;
   
   config_setting_lookup_int(rig_control_settings, "rig_id", &rig_id);
   config_setting_lookup_int(rig_control_settings, "baud_rate", &baud_rate);
   config_setting_lookup_int(rig_control_settings, "data_bits", &data_bits);
   config_setting_lookup_int(rig_control_settings, "stop_bits", &stop_bits);
+  config_setting_lookup_bool(rig_control_settings, "enabled", &enabled);
   config_setting_lookup_string(rig_control_settings, "frequency", &frequency);
   config_setting_lookup_string(rig_control_settings, "serial_port", &serial_port);
+
+  if (!enabled)
+    return -1;
   
   printf("frequency: %s\n", frequency);
 

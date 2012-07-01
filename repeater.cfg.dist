@@ -17,6 +17,9 @@ repeater: {
 
   // Rig control via hamlib. This part is a bit technical.
   rig_control: {
+    // Enable rig control at all...
+    enabled: true;
+
     // The hamlib id of the rig we're controlling (check `rigctl --list`).
     rig_id: 124;
 
