@@ -93,8 +93,3 @@ void fetch_weather(char *location) {
 	   weather.city, weather.temp_f, weather.conditions, weather.wind, weather.humidity);
   vocalize(result, "klatt");
 }
-
-int weather(void) {
-  fetch_weather("44203");
-  return 0;
-}
