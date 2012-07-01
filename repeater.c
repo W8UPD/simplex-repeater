@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include "tonedecode.h"
 
-#define SAMPLE_RATE  (8000)
+#define SAMPLE_RATE  (16000)
 #define FRAMES_PER_BUFFER (512)
 #define NUM_SECONDS     (60)
 #define NUM_CHANNELS    (1)
@@ -82,8 +82,8 @@ static int record( const void *inBuf, void *outBuf,
 
   data->frameIndex += framesToCalc;
 
-  printf(":%c %f-", dtmf(data->recAud), toneAvg);
-  fflush(stdout);
+  //printf(":%c %f-", dtmf(data->recAud), toneAvg);
+  dtmf(data->recAud);
 
   return finished;
 }
@@ -130,6 +130,7 @@ static int play( const void *inBuf, void *outBuf,
 
   }
 
+  dtmf(data->recAud);
   return finished;
 }
 

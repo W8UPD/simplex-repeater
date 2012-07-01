@@ -1,14 +1,13 @@
-
 #include<stdio.h>
 #include<math.h>
 
 #define pi 3.14159265358979323846264338327
 
 //set sample rate, block size, and frequencies of interest
-const int sampleRate = 8000;
+const int sampleRate = 16000;
 const int blockln = 128;
 const int windowmov = 64;
-const int interp = 2;
+const int interp = 5;
 const int freq[] = { 697, 770, 852, 941, 1209, 1336, 1477, 1633 };
 int samPerSym;
 int numoffreq;
@@ -56,10 +55,13 @@ void findMag(float *fmagn, float *samp0, float *samp1, float *samp2, float *coef
 
   //compute magnitudes of each frequency of interest
   int i;
-  for(i=0; i != numoffreq; i++) {
+  for(i=0; i < numoffreq; i++) {
     fmagn[i] = samp2[i]*samp2[i] + samp1[i]*samp1[i] - coeff[i]*samp1[i]*samp2[i];
   }
 
+  for(i=0; i < numoffreq; i++){
+    printf("f,%d, m,%f\n", freq[i], fmagn[i]);
+  }
 
   //reset past sample buffers for next block
   for(i=0; i != numoffreq; i++) {
@@ -165,11 +167,11 @@ char dtmf(short *audio){
 
 
     for(i=0; i < numoffreq; i++){
-      sum += fmag[i];
+      if (fmag[i] != fmag[i]) break;
+      toneAvg += fmag[i]/(float)numoffreq;
     }
 
-    toneAvg = (int)sum/(int)numoffreq;
-
+    printf("\navg: %f\n\n", toneAvg);
     //the two tones that are present for a single key will be above this average
     char col = 'e';
     char row = 'e';
@@ -179,15 +181,21 @@ char dtmf(short *audio){
     for(i=0; i < 4; i++){
       if(fmag[i] > toneAvg){
         row = i;
+        printf("above%d", i);
       }
     }
 
     for(i=4; i < 8; i++){
       if(fmag[i]>toneAvg){
         col = i;
+        printf("above%d", i);
       }
     }
 
+    sum = 0;
+    toneAvg = 0;
+
+    printf("\n\n%c %d %d\n\n", keys[row][col], row, col);
     return keys[row][col];
 
   }
