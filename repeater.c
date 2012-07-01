@@ -35,13 +35,15 @@ typedef short SAMPLE;
 #define SAMPLE_SILENCE  (0)
 #define PRINTF_S_FORMAT "%d"
 
-typedef struct
-{
+typedef struct{
   int          frameIndex;  //Where one is in array
   int          maxFrameIndex; //Length of array
-  SAMPLE      *recAud; //recorded audio samples
-}
-  paData;
+  SAMPLE       *recAud; //recorded audio samples
+}  paData;
+
+char rcvd;
+extern float toneAvg;
+extern float sum;
 
 static int record( const void *inBuf, void *outBuf,
 		   unsigned long framesPerBuffer,
@@ -62,33 +64,33 @@ static int record( const void *inBuf, void *outBuf,
   (void) statusFlags;
   (void) userData;
 
-  if( framesLeft < framesPerBuffer )
-    {
+  if (framesLeft < framesPerBuffer) {
       framesToCalc = framesLeft;
       finished = paComplete;
-    }
-  else
-    {
+  } else {
       framesToCalc = framesPerBuffer;
       finished = paContinue;
+  }
+
+  if (inBuf == NULL) {
+
+    for(i=0; i<framesToCalc; i++) {
+      *pwrite++ = SAMPLE_SILENCE;
     }
 
-  if( inBuf == NULL )
-    {
-      for( i=0; i<framesToCalc; i++ )
-	{
-	  *pwrite++ = SAMPLE_SILENCE;  /* left */
-	}
+  } else {
+
+    for(i=0; i<framesToCalc; i++) {
+      *pwrite++ = *prwrite++;
     }
-  else
-    {
-      for( i=0; i<framesToCalc; i++ )
-	{
-	  *pwrite++ = *prwrite++;  /* left */
-	}
-    }
+
+  }
 
   data->frameIndex += framesToCalc;
+
+  printf(":%c %f-", dtmf(&data), toneAvg);
+  fflush(stdout);
+
   return finished;
 }
 
@@ -110,35 +112,34 @@ static int play( const void *inBuf, void *outBuf,
   (void) statusFlags;
   (void) userData;
 
-  if( framesLeft < framesPerBuffer )
-    {
-      //last buffer read
-      for( i=0; i<framesLeft; i++ )
-	{
-	  *pwrite++ = *prwrite++;
-	}
+  if(framesLeft < framesPerBuffer) {
+    //last buffer read
+    for (i=0; i<framesLeft; i++) {
+      *pwrite++ = *prwrite++;
+    }
 
-      for( ; i<framesPerBuffer; i++ )
-	{
+    for (; i<framesPerBuffer; i++) {
 	  *pwrite++ = 0;
-	}
-      data->frameIndex += framesLeft;
-      finished = paComplete;
     }
-  else
-    {
-      for( i=0; i<framesPerBuffer; i++ )
-	{
-	  *pwrite++ = *prwrite++;  /* left */
-	}
-      data->frameIndex += framesPerBuffer;
-      finished = paContinue;
+
+    data->frameIndex += framesLeft;
+    finished = paComplete;
+
+  } else {
+
+    for (i=0; i<framesPerBuffer; i++) {
+	  *pwrite++ = *prwrite++;
     }
+
+    data->frameIndex += framesPerBuffer;
+    finished = paContinue;
+
+  }
 
   return finished;
 }
 
-int useit() {
+int sound() {
   //some starting stuff
   PaStreamParameters inputParameters, outputParameters;
   PaStream* stream;
@@ -165,18 +166,17 @@ int useit() {
 
   //allocate memory for recorded audio
   data.recAud = (SAMPLE *) malloc( numBytes ); /* recAud is initialised. */
-  if( data.recAud == NULL )
-    {
+  if (data.recAud == NULL ) {
       printf("Could not allocate record array.\n");
       goto done;
-    }
+  }
 
   //clear data.recAud array
-  for( i=0; i<numSamples; i++ ) data.recAud[i] = 0;
+  for (i=0; i<numSamples; i++) data.recAud[i] = 0;
 
   //initialize portAudio
   err = Pa_Initialize();
-  if( err != paNoError ) goto done;
+  if (err != paNoError) goto done;
 
   //use the default device
   inputParameters.device = Pa_GetDefaultInputDevice(); 
@@ -188,69 +188,62 @@ int useit() {
   //tell portaudio the parameters for the device
   inputParameters.channelCount = NUM_CHANNELS;
   inputParameters.sampleFormat = PA_SAMPLE_TYPE;
-  inputParameters.suggestedLatency = Pa_GetDeviceInfo( inputParameters.device )->defaultLowInputLatency;
+  inputParameters.suggestedLatency = Pa_GetDeviceInfo(inputParameters.device)->defaultLowInputLatency;
   inputParameters.hostApiSpecificStreamInfo = NULL;
 
   //open stream for recording and playback
-  err = Pa_OpenStream(
-		      &stream,
-		      &inputParameters,
-		      NULL,                  /* &outputParameters, */
-		      SAMPLE_RATE,
-		      FRAMES_PER_BUFFER,
-		      paClipOff,      /* we won't output out of range samples so don't bother clipping them */
-		      record,
-		      &data );
-  if( err != paNoError ) goto done;
+  err = Pa_OpenStream(&stream, &inputParameters, NULL, SAMPLE_RATE, FRAMES_PER_BUFFER, paClipOff, record, &data);
+  if (err != paNoError) goto done;
 
   //start recording
-  err = Pa_StartStream( stream );
-  if( err != paNoError ) goto done;
+  err = Pa_StartStream(stream);
+  if(err != paNoError) goto done;
 
   SAMPLE max = 0;
-  //while still recording...
-  while( ( err = Pa_IsStreamActive( stream ) ) == 1 )
-    {
-      Pa_Sleep(50);
-      //avg
-      for( i=0; i<numSamples; i++ )
-	{
-	  val = data.recAud[i];
-	  if( val < 0 ){
-	    //printf("1-%d\n", max);
-	    val = -val; //rectify
-	    max = max - slope;
-	  }
-	  if( val > max ){
-	    //printf("2-%d\n", max);
-	    max = val; //take largest
-	    max = max - slope;
-	  }
-	}
 
-      if(max > thresh) {
-        if(RX == 1) {
-          RX =  0;
-          data.frameIndex = 0;
-          startat = data.frameIndex;
-          TX = 1;
-          printf("Transmitting: %d\n", data.frameIndex);
-        }
-      } else if (TX == 1) {
-        endat = data.frameIndex;
-        TX = 0;
-        printf("Receiveing: %d\n", data.frameIndex);
-        break;
+  //while still recording...
+  while((err = Pa_IsStreamActive(stream)) == 1){
+    Pa_Sleep(50);
+
+    //avg
+    for(i=0; i<numSamples; i++){
+      val = data.recAud[i];
+      if(val < 0){
+        //printf("1-%d\n", max);
+        val = -val; //rectify
+        max = max - slope;
       }
+
+      if(val > max){
+        //printf("2-%d\n", max);
+        max = val; //take largest
+        max = max - slope;
+      }
+
     }
 
-  if( err < 0 ) goto done;
+    if(max > thresh) {
+      if(RX == 1) {
+        RX =  0;
+        data.frameIndex = 0;
+        startat = data.frameIndex;
+        TX = 1;
+        printf("Receiveing!\n");
+      }
+    } else if (TX == 1) {
+      endat = data.frameIndex;
+      TX = 0;
+      printf("Transmitting!\n");
+      break;
+    }
+  }
 
-  err = Pa_CloseStream( stream );
-  if( err != paNoError ) goto done;
+  if(err < 0) goto done;
+
+  err = Pa_CloseStream(stream);
+  if(err != paNoError) goto done;
 
   //Play audio
-  printf("S %d, E %d\n", startat, endat);
   data.frameIndex = 0;
 
   //open default device
@@ -260,61 +253,52 @@ int useit() {
     goto done;
   }
 
-  outputParameters.channelCount = NUM_CHANNELS;                     /* stereo output */
+  outputParameters.channelCount = NUM_CHANNELS;
   outputParameters.sampleFormat =  PA_SAMPLE_TYPE;
-  outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
+  outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
   outputParameters.hostApiSpecificStreamInfo = NULL;
 
-  printf("Sending audio...\n");
-  err = Pa_OpenStream(
-		      &stream,
-		      NULL, /* no input */
-		      &outputParameters,
-		      SAMPLE_RATE,
-		      FRAMES_PER_BUFFER,
-		      paClipOff,      /* we won't output out of range samples so don't bother clipping them */
-		      play,
-		      &data );
-  if( err != paNoError ) goto done;
+  err = Pa_OpenStream(&stream, NULL, &outputParameters, SAMPLE_RATE, FRAMES_PER_BUFFER, paClipOff, play, &data );
+  if (err != paNoError) goto done;
 
-  if( stream )
-    {
-      err = Pa_StartStream( stream );
-      if( err != paNoError ) goto done;
-        
-      printf("Sending audio...\n");
+  if (stream) {
+    err = Pa_StartStream(stream);
+    if(err != paNoError) goto done;
+    
+    while ((err = Pa_IsStreamActive(stream)) == 1) {
+    Pa_Sleep(25);
 
-      while( ( err = Pa_IsStreamActive( stream ) ) == 1 ){
-	Pa_Sleep(25);
-	if (data.frameIndex >= endat){
-	  break;
-	}
+      if (data.frameIndex >= endat) {
+        break;
       }
-
-      if( err < 0 ) goto done;
-        
-      err = Pa_CloseStream( stream );
-      if( err != paNoError ) goto done;
-        
-    } 
-
- done:
-  Pa_Terminate();
-  if (data.recAud)       /* Sure it is NULL or valid. */
-    free( data.recAud );
-  if( err != paNoError )
-    {
-      fprintf( stderr, "An error occured while using the portaudio stream\n" );
-      fprintf( stderr, "Error number: %d\n", err );
-      fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
-      err = 1;          /* Always return 0 or 1, but no other return codes. */
     }
+
+    if (err < 0) goto done;
+        
+    err = Pa_CloseStream(stream);
+    if (err != paNoError) goto done;
+      
+  } 
+
+  done:
+  Pa_Terminate();
+  if (data.recAud) free(data.recAud);
+  if(err != paNoError) {
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
+    err = 1;          /* Always return 0 or 1, but no other return codes. */
+  }
   return err;
 }
 
-void repeat()
-{
+void repeat(){
   for (;;){
-    useit();
+    sound();
   }
+}
+
+int main(){
+  repeat();
+  return 0;
 }
