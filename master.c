@@ -17,6 +17,7 @@
 */
 
 #include <pthread.h>
+#include <unistd.h>
 #include "speech_synthesis.h"
 #include "repeater.h"
 #include "config.h"
@@ -26,9 +27,17 @@
 extern config_setting_t *repeater_settings;
 config_t cfg;
 
+void *test(void * nothingness){
+  while (1) {
+    printf("hi\n");
+    sleep(2);
+  }
+}
+
 int main(int argc, char **args)
 {
-  pthread_t repeat_thread;
+  pthread_t repeat_thread, test_thread;
+  int a, b;
 
   setup_config(); // Populate 'setting' variable.
 
@@ -43,6 +52,9 @@ int main(int argc, char **args)
   fetch_weather("44325");
 
   // TODO: This should be its own thread.
-  pthread_create(&repeat_thread, NULL, &repeat, NULL);
+  a = pthread_create(&repeat_thread, NULL, &repeat, NULL);
+  b = pthread_create(&test_thread, NULL, &test, NULL);
+  pthread_join(repeat_thread, NULL);
+  pthread_join(test_thread, NULL);
   pthread_exit(NULL);
 }
