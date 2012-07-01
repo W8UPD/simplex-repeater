@@ -188,7 +188,10 @@ char dtmf(short *audio){
       }
     }
 
-    return keys[row][col];
+    return keys[(int)row][(int)col];
 
   }
+
+  // Should never get here?
+  return -1;
 }

@@ -133,6 +133,20 @@ static int play( const void *inBuf, void *outBuf,
   return finished;
 }
 
+int oh_no_what_now(paData data, int err)
+{
+  Pa_Terminate();
+  if (data.recAud)
+    free(data.recAud);
+  if (err != paNoError) {
+    fprintf(stderr, "An error occured while using the portaudio stream\n");
+    fprintf(stderr, "Error number: %d\n", err);
+    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
+    err = 1;
+  }
+  return err;
+}
+
 int sound() {
   //some starting stuff
   PaStreamParameters inputParameters, outputParameters;
@@ -147,7 +161,6 @@ int sound() {
   int TX = 0;
   int RX = 1;
   int thresh = 15000;
-  int startat = 0;
   int endat = 0;
   int slope = 2;
 
@@ -160,9 +173,9 @@ int sound() {
 
   //allocate memory for recorded audio
   data.recAud = (short *) malloc( numBytes ); /* recAud is initialised. */
-  if (data.recAud == NULL ) {
+  if (data.recAud == NULL) {
       printf("Could not allocate record array.\n");
-      goto done;
+      return oh_no_what_now(data, err);
   }
 
   //clear data.recAud array
@@ -170,13 +183,14 @@ int sound() {
 
   //initialize portAudio
   err = Pa_Initialize();
-  if (err != paNoError) goto done;
+  if (err != paNoError)
+    return oh_no_what_now(data, err);
 
   //use the default device
   inputParameters.device = Pa_GetDefaultInputDevice(); 
   if (inputParameters.device == paNoDevice) {
     fprintf(stderr,"Error: No default input device.\n");
-    goto done;
+    return oh_no_what_now(data, err);
   }
 
   //tell portaudio the parameters for the device
@@ -187,11 +201,13 @@ int sound() {
 
   //open stream for recording and playback
   err = Pa_OpenStream(&stream, &inputParameters, NULL, SAMPLE_RATE, FRAMES_PER_BUFFER, paClipOff, record, &data);
-  if (err != paNoError) goto done;
+  if (err != paNoError)
+    return oh_no_what_now(data, err);
 
   //start recording
   err = Pa_StartStream(stream);
-  if(err != paNoError) goto done;
+  if(err != paNoError)
+    return oh_no_what_now(data, err);
 
   short max = 0;
 
@@ -220,7 +236,6 @@ int sound() {
       if(RX == 1) {
         RX =  0;
         data.frameIndex = 0;
-        startat = data.frameIndex;
         TX = 1;
         printf("Receiveing!\n");
       }
@@ -232,10 +247,12 @@ int sound() {
     }
   }
 
-  if(err < 0) goto done;
+  if(err < 0)
+    return oh_no_what_now(data, err);
 
   err = Pa_CloseStream(stream);
-  if(err != paNoError) goto done;
+  if(err != paNoError)
+    return oh_no_what_now(data, err);
 
   //Play audio
   data.frameIndex = 0;
@@ -244,7 +261,7 @@ int sound() {
   outputParameters.device = Pa_GetDefaultOutputDevice();
   if (outputParameters.device == paNoDevice) {
     fprintf(stderr,"Error: No default output device.\n");
-    goto done;
+    return oh_no_what_now(data, err);
   }
 
   outputParameters.channelCount = NUM_CHANNELS;
@@ -253,11 +270,13 @@ int sound() {
   outputParameters.hostApiSpecificStreamInfo = NULL;
 
   err = Pa_OpenStream(&stream, NULL, &outputParameters, SAMPLE_RATE, FRAMES_PER_BUFFER, paClipOff, play, &data );
-  if (err != paNoError) goto done;
+  if (err != paNoError)
+    return oh_no_what_now(data, err);
 
   if (stream) {
     err = Pa_StartStream(stream);
-    if(err != paNoError) goto done;
+    if(err != paNoError)
+      return oh_no_what_now(data, err);
     
     while ((err = Pa_IsStreamActive(stream)) == 1) {
     Pa_Sleep(25);
@@ -267,27 +286,20 @@ int sound() {
       }
     }
 
-    if (err < 0) goto done;
+    if (err < 0)
+      return oh_no_what_now(data, err);
         
     err = Pa_CloseStream(stream);
-    if (err != paNoError) goto done;
+    if (err != paNoError)
+      return oh_no_what_now(data, err);
       
-  } 
-
-  done:
-  Pa_Terminate();
-  if (data.recAud) free(data.recAud);
-  if(err != paNoError) {
-    fprintf(stderr, "An error occured while using the portaudio stream\n");
-    fprintf(stderr, "Error number: %d\n", err);
-    fprintf(stderr, "Error message: %s\n", Pa_GetErrorText(err));
-    err = 1;          /* Always return 0 or 1, but no other return codes. */
   }
-  return err;
+  return 0;
 }
 
-void *repeat(void * nothingness){
+void *repeat(void *nothingness){
   for (;;){
     sound();
   }
+  return nothingness;
 }

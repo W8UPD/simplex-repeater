@@ -16,8 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <espeak/speak_lib.h>
+#include <festival/festival.h>
 #include <libconfig.h>
+#include <string.h>
 
 extern config_setting_t *repeater_settings;
 extern config_t cfg;
@@ -36,10 +37,14 @@ void vocalize(char *text)
   if (!enabled)
     return;
 
-  int synth_flags = espeakCHARS_AUTO | espeakPHONEMES | espeakENDPAUSE;
-  espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 0, NULL, 0);
-  espeak_SetVoiceByName(voice);
-  espeak_SetParameter(espeakRATE, 140, 0);
-  espeak_Synth(text, 1000, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
-  espeak_Synchronize();
+  char voicename[] = "(voice_";
+  strcat(voicename, voice);
+  strcat(voicename, ")");  
+  
+  int heap_size = 210000;  // default scheme heap size
+  int load_init_files = 1; // we want the festival init files loaded
+
+  festival_initialize(load_init_files, heap_size);
+  festival_eval_command(voicename);
+  festival_say_text(text);
 }
