@@ -297,8 +297,3 @@ void repeat(){
     sound();
   }
 }
-
-int main(){
-  repeat();
-  return 0;
-}
