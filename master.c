@@ -16,6 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <pthread.h>
 #include "speech_synthesis.h"
 #include "repeater.h"
 #include "config.h"
@@ -27,6 +28,8 @@ config_t cfg;
 
 int main(int argc, char **args)
 {
+  pthread_t repeat_thread;
+
   setup_config(); // Populate 'setting' variable.
 
   // Just a test.
@@ -40,6 +43,6 @@ int main(int argc, char **args)
   fetch_weather("44325");
 
   // TODO: This should be its own thread.
-  repeat();
-  return 0;
+  pthread_create(&repeat_thread, NULL, &repeat, NULL);
+  pthread_exit(NULL);
 }

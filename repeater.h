@@ -24,4 +24,4 @@ typedef struct {
   short        *recAud; //recorded audio samples
 } paData;
 
-void repeat();
+void *repeat(void *);

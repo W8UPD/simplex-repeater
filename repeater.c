@@ -286,7 +286,7 @@ int sound() {
   return err;
 }
 
-void repeat(){
+void *repeat(void * nothingness){
   for (;;){
     sound();
   }
