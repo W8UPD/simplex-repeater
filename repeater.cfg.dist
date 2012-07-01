@@ -6,8 +6,37 @@ repeater: {
   // (identification_timer * 2) minutes?
   initial_identifier: "Welcome to the W 8 U P D simplex repeater from Akron Ohio.";
 
-  // Should we use voice synthesis or morse code to ID/respond to user input?
-  voice_synthesis: true;
+  // Speech synthesis configuration.
+  voice_synthesis: {
+    // Should we use it at all?
+    enabled: true;
+
+    // Which espeak voice should we use?
+    voice: "default";
+  };
+
+  // Rig control via hamlib. This part is a bit technical.
+  rig_control: {
+    // The hamlib id of the rig we're controlling (check `rigctl --list`).
+    rig_id: 124;
+
+    // The path to the serial port.
+    serial_port: "/dev/ttyS0";
+
+    // Your rig's baud rate (see your rig's user manual or Google).
+    baud_rate: 4800;
+
+    // Your rig's data bits (see your rig's user manual or Google).
+    data_bits: 8;
+
+    // Your rig's stop bits (see your rig's user manual or Google).
+    stop_bits: 2;
+
+    // What frequency should we tune to? (Hertz)
+    // NOTE: THIS IS A STRING. THIS MUST BE A STRING. KEEP IT A STRING.
+    // SERIOUSLY. DO IT. OR ELSE. No, really. It's a string.
+    frequency: "14070000";
+  };
 
   // Time in minutes, before each identification occurs.
   identification_timer: 9;
@@ -15,4 +44,32 @@ repeater: {
   // PL Tone, if any?
   // Set to false for none.
   pl_tone: 123.0;
+
+  // Used for weather fetching and other functionality.
+  zipcode: 44325;
+
+  // Should we allow network access at all?
+  network_access: true;
+
+  // Configure various functionality of the repeater.
+  // Each element contains:
+  // summary      - a short description of the functionality.
+  // enabled      - a boolean describing whether or not the command can be
+  //                used at all.
+  // prefix       - the dtmf prefix to use to activate the command.
+  // argument     - any data we should look for after the prefix. (optional)
+  // vocal_prefix - how espeak should say the prefix code. (optional,
+  //                defaults to prefix)
+  commands: (
+    { summary: "Report the weather for eh given zipcode";
+      prefix: "eh";
+      vocal_prefix: "eh";
+      argument: "zipcode";
+      enabled: true;
+    },
+    { summary: "List all enabled commands and their prefixes";
+      prefix: "*";
+      enabled: true;
+    }
+  );
 };
