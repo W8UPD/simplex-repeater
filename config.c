@@ -35,7 +35,7 @@ void setup_config()
   if (access("repeater.cfg", F_OK) != -1) {
     configfile = "repeater.cfg";
   } else if (access("/etc/simplex-repeater/repeater.cfg", F_OK) != -1) {
-    configfile = "repeater.cfg";
+    configfile = "/etc/simplex-repeater/repeater.cfg";
   } else {
     fprintf(stderr, "Config file not found.\n");
     exit(EXIT_FAILURE);
