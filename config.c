@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <libconfig.h>
 #include "speech_synthesis.h"
 
@@ -30,7 +31,17 @@ void setup_config()
   config_init(&cfg);
   
   // Parse config file. If there's errors, die early.
-  if (!config_read_file(&cfg, "repeater.cfg")) {
+  const char *configfile;
+  if (access("repeater.cfg", F_OK) != -1) {
+    configfile = "repeater.cfg";
+  } else if (access("/etc/simplex-repeater/repeater.cfg", F_OK) != -1) {
+    configfile = "repeater.cfg";
+  } else {
+    fprintf(stderr, "Config file not found.\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  if (!config_read_file(&cfg, configfile)) {
     fprintf(stderr, "%s:%d - %s\n",
 	    config_error_file(&cfg),
 	    config_error_line(&cfg),
