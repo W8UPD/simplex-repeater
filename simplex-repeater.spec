@@ -1,8 +1,8 @@
-%define gitcommit  f0abec5
+%define gitcommit  2d5cfe5
 %define gitdate    20120701
 Name:           simplex-repeater
 Version:        1.0.0
-Release:        0.1.%{gitdate}git%{gitcommit}%{?dist}
+Release:        0.2.%{gitdate}git%{gitcommit}%{?dist}
 Summary:        A software-based simplex repeater
 
 Group:          Applications/Communication
@@ -50,5 +50,8 @@ rm -rf %{buildroot}
 %{_sysconfdir}/simplex-repeater
 
 %changelog
+* Sun Jul 1 2012 Ricky Elrod <codeblock@fedoraproject.org> - 1.0.0-0.2.20120701git2d5cfe5
+- Update to upstream HEAD.
+
 * Sun Jul 1 2012 Ricky Elrod <codeblock@fedoraproject.org> - 1.0.0-0.1.20120701gitf0abec5
 - Initial build.
